@@ -1,16 +1,19 @@
-import { Server } from 'http';
-import mongoose from 'mongoose';
-import app from './app';
-import config from './config';
+import { Server } from "http";
+import mongoose from "mongoose";
+import app from "./app";
 
-// Todo if you want understand the code read my following two blogs https://dev.to/md_enayeturrahman_2560e3/how-to-handle-errors-in-an-industry-grade-nodejs-application-217b https://dev.to/md_enayeturrahman_2560e3/how-to-set-up-eslint-and-prettier-1nk6 
+import { seed } from "./app/utils/seeding";
+import config from "./app/config";
+
+// Todo if you want understand the code read my following two blogs https://dev.to/md_enayeturrahman_2560e3/how-to-handle-errors-in-an-industry-grade-nodejs-application-217b https://dev.to/md_enayeturrahman_2560e3/how-to-set-up-eslint-and-prettier-1nk6
 
 let server: Server;
 
 async function main() {
   try {
-    await mongoose.connect(config.database_url as string);
-
+    await mongoose.connect(config.db_url as string);
+    console.log("🛢 Database connected successfully");
+    await seed();
     server = app.listen(config.port, () => {
       console.log(`app is listening on port ${config.port}`);
     });
@@ -21,7 +24,7 @@ async function main() {
 
 main();
 
-process.on('unhandledRejection', (err) => {
+process.on("unhandledRejection", (err) => {
   console.log(`😈 unahandledRejection is detected , shutting down ...`, err);
   if (server) {
     server.close(() => {
@@ -31,7 +34,7 @@ process.on('unhandledRejection', (err) => {
   process.exit(1);
 });
 
-process.on('uncaughtException', () => {
+process.on("uncaughtException", () => {
   console.log(`😈 uncaughtException is detected , shutting down ...`);
   process.exit(1);
 });

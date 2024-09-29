@@ -1,13 +1,15 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import cookieParser from "cookie-parser";
+import path from "path";
+
+import express, { Application, NextFunction, Request, Response } from "express";
 import cors from "cors";
-import express, { Application, Request, Response } from "express";
-import router from "./app/routes";
+
 import notFound from "./app/middlewares/notFound";
+import router from "./app/routes";
+
+import cookieParser from "cookie-parser";
 import globalErrorHandler from "./app/middlewares/globalErrorhandler";
+import noDataFound from "./app/middlewares/noDataFound";
+import httpStatus from "http-status";
 
 const app: Application = express();
 
@@ -15,18 +17,31 @@ const app: Application = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(cors({ origin: ["http://localhost:3000"], credentials: true }));
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+    credentials: true,
 
-// application routes
-app.use("/api/v1", router); // /api/v1 will prefix all the route. This is the connection with the index.ts file inside the routes folder.
+    // methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Welcome to assignment-6");
+app.use("/api", router);
+//Testing
+app.get("/", (req: Request, res: Response, next: NextFunction) => {
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Welcome to assignment-6",
+  });
 });
 
-app.use(globalErrorHandler); // This is connected with the globalErrorhandler.ts file at the middleware folder.
+app.use(globalErrorHandler);
 
 //Not Found
-app.use(notFound); // This is connected with the notFound.ts file at the middleware folder.
+app.use(notFound);
+app.use(noDataFound);
 
 export default app;

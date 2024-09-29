@@ -1,19 +1,55 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { User } from './user.model';
+import { QueryBuilder } from "../../builder/QueryBuilder";
+import { UserSearchableFields } from "./user.constant";
+import { TUser } from "./user.interface";
+import { User } from "./user.model";
 
-// Todo. Create your own service function to write the business logic. 
+const createUser = async (payload: TUser) => {
+  const user = await User.create(payload);
 
-//You can read my following blog to get deeper understanding about creating different types of service function https://dev.to/md_enayeturrahman_2560e3/how-to-create-api-in-an-industry-standard-app-44ck
+  return user;
+};
 
+const getAllUsersFromDB = async (query: Record<string, unknown>) => {
+  const users = new QueryBuilder(User.find(), query)
+    .fields()
+    .paginate()
+    .sort()
+    .filter()
+    .search(UserSearchableFields);
 
-const changeStatus = async (id: string, payload: { status: string }) => {
-  const result = await User.findByIdAndUpdate(id, payload, {
+  const result = await users.modelQuery;
+
+  return result;
+};
+
+const getSingleUserFromDB = async (id: string) => {
+  const user = await User.findById(id);
+
+  return user;
+};
+
+const updateUserFromDB = async (id: string, payload: Partial<TUser>) => {
+  const result = await User.findOneAndUpdate({ _id: id }, payload, {
     new: true,
   });
   return result;
 };
 
+const deleteUserFromDB = async (id: string) => {
+  const result = await User.findByIdAndUpdate(
+    id,
+    { isDeleted: true },
+    {
+      new: true,
+    }
+  );
+  return result;
+};
+
 export const UserServices = {
-  changeStatus,
+  createUser,
+  getAllUsersFromDB,
+  getSingleUserFromDB,
+  updateUserFromDB,
+  deleteUserFromDB,
 };

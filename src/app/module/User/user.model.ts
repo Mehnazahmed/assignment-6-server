@@ -1,60 +1,68 @@
-/* eslint-disable @typescript-eslint/no-this-alias */
-import bcrypt from 'bcrypt';
+/* eslint-disable no-useless-escape */
+import bcryptjs from 'bcryptjs';
 import { Schema, model } from 'mongoose';
-import { TUser, UserModel } from './user.interface';
-import config from '../../../config';
+import config from '../../config';
+import { USER_ROLE, USER_STATUS } from './user.constant';
+import { IUserModel, TUser } from './user.interface';
 
-// Todo. Change the code as par your project need. Below mongoose schema, pre and post hook and static method code is shown for your reference. 
-
-//You can read my following blog to get deeper understanding about creating different types of schema and model https://dev.to/md_enayeturrahman_2560e3/how-to-create-api-in-an-industry-standard-app-44ck
-
-const userSchema = new Schema<TUser, UserModel>(
+const userSchema = new Schema<TUser, IUserModel>(
   {
-    id: {
+    name: {
       type: String,
       required: true,
-      unique: true,
+    },
+    role: {
+      type: String,
+      enum: Object.keys(USER_ROLE),
+      required: true,
     },
     email: {
       type: String,
       required: true,
-      unique: true,
+      //validate email
+      match: [
+        /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/,
+        'Please fill a valid email address',
+      ],
     },
     password: {
       type: String,
       required: true,
       select: 0,
     },
-    needsPasswordChange: {
-      type: Boolean,
-      default: true,
+    status: {
+      type: String,
+      enum: Object.keys(USER_STATUS),
+      default: USER_STATUS.ACTIVE,
     },
     passwordChangedAt: {
       type: Date,
     },
-    role: {
+    mobileNumber: {
       type: String,
-      enum: ['superAdmin', 'student', 'faculty', 'admin'],
+      required: true,
     },
-   
-    isDeleted: {
-      type: Boolean,
-      default: false,
+    profilePhoto: {
+      type: String,
+      default: null
     },
   },
   {
     timestamps: true,
-  },
+    virtuals: true,
+  }
 );
 
 userSchema.pre('save', async function (next) {
   // eslint-disable-next-line @typescript-eslint/no-this-alias
   const user = this; // doc
   // hashing password and save into DB
-  user.password = await bcrypt.hash(
+
+  user.password = await bcryptjs.hash(
     user.password,
-    Number(config.bcrypt_salt_rounds),
+    Number(config.bcrypt_salt_rounds)
   );
+
   next();
 });
 
@@ -64,24 +72,24 @@ userSchema.post('save', function (doc, next) {
   next();
 });
 
-userSchema.statics.isUserExistsByCustomId = async function (id: string) {
-  return await User.findOne({ id }).select('+password');
+userSchema.statics.isUserExistsByEmail = async function (email: string) {
+  return await User.findOne({ email }).select('+password');
 };
 
 userSchema.statics.isPasswordMatched = async function (
   plainTextPassword,
-  hashedPassword,
+  hashedPassword
 ) {
-  return await bcrypt.compare(plainTextPassword, hashedPassword);
+  return await bcryptjs.compare(plainTextPassword, hashedPassword);
 };
 
 userSchema.statics.isJWTIssuedBeforePasswordChanged = function (
-  passwordChangedTimestamp: Date,
-  jwtIssuedTimestamp: number,
+  passwordChangedTimestamp: number,
+  jwtIssuedTimestamp: number
 ) {
   const passwordChangedTime =
     new Date(passwordChangedTimestamp).getTime() / 1000;
   return passwordChangedTime > jwtIssuedTimestamp;
 };
 
-export const User = model<TUser, UserModel>('User', userSchema);
+export const User = model<TUser, IUserModel>('User', userSchema);

@@ -1,18 +1,39 @@
 import { z } from 'zod';
+import { USER_ROLE, USER_STATUS } from './user.constant';
 
-// Todo. Create your own zod validation here. Below i show a simple validation that only receive one item from the frontend. 
-
-const userValidationSchema = z.object({
-  pasword: z
-    .string({
-      invalid_type_error: 'Password must be string',
-    })
-    .max(20, { message: 'Password can not be more than 20 characters' })
-    .optional(),
+const createUserValidationSchema = z.object({
+  body: z.object({
+    name: z.string({
+      required_error: 'Name is required',
+    }),
+    role: z.nativeEnum(USER_ROLE),
+    email: z
+      .string({
+        required_error: 'Email is required',
+      })
+      .email({
+        message: 'Invalid email',
+      }),
+    password: z.string({
+      required_error: 'Password is required',
+    }),
+    status: z.nativeEnum(USER_STATUS).default(USER_STATUS.ACTIVE),
+    mobileNumber: z.string().optional(),
+  }),
 });
 
-// You can read my following blog to get deeper understanding about creating different types of zod validation https://dev.to/md_enayeturrahman_2560e3/how-to-create-api-in-an-industry-standard-app-44ck
+const updateUserValidationSchema = z.object({
+  body: z.object({
+    name: z.string().optional(),
+    role: z.nativeEnum(USER_ROLE).optional(),
+    email: z.string().email().optional(),
+    password: z.string().optional(),
+    status: z.nativeEnum(USER_STATUS).optional(),
+    mobileNumber: z.string().optional(),
+  }),
+});
 
 export const UserValidation = {
-  userValidationSchema,
+  createUserValidationSchema,
+  updateUserValidationSchema,
 };

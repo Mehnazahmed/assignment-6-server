@@ -1,25 +1,27 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import express, { NextFunction, Request, Response } from 'express';
-import validateRequest from '../../middlewares/validateRequest';
-import { upload } from '../../utils/sendImageToCloudinary';
-import { UserControllers } from './user.controller';
-import { UserValidation } from './user.validation';
-
-// Todo. Everything in this file need to customize according to your requirement
+import express from "express";
+import { UserControllers } from "./user.controller";
+import auth from "../../middlewares/auth";
+import { USER_ROLE } from "./user.constant";
+import validateRequest from "../../middlewares/validateRequest";
+import { UserValidation } from "./user.validation";
 
 const router = express.Router();
 
+export const UserRoutes = router;
+
 router.post(
-  '/create-student',
-  // auth(), // Use it if you apply auth code. No corresponding code is mentioned here. If you do not need it remove it. 
-  upload.single('file'), // Use it if you use multer to upload file.
-   validateRequest(UserValidation.userValidationSchema), // This is the middleware to validate req.body using zod. the corresponding code you will find in the validateRequest.ts file inside the middleware folder and user.validation.ts file inside the module folder. 
-  UserControllers.createStudent, // You will find the corresponding code in the user.controller.ts file
+  "/create-user",
+  auth(USER_ROLE.ADMIN),
+  validateRequest(UserValidation.createUserValidationSchema),
+  UserControllers.userRegister
+);
+router.get("/", UserControllers.getAllUsers);
+router.get("/:id", UserControllers.getSingleUser);
+router.patch(
+  "/:id",
+  auth(USER_ROLE.ADMIN),
+  validateRequest(UserValidation.updateUserValidationSchema),
+  UserControllers.updateUser
 );
 
-
-//Todo. Create get, post, put, patch, delete etc route as par your requirement. You can read my following blog to get deeper understanding about creating different types of route https://dev.to/md_enayeturrahman_2560e3/how-to-create-api-in-an-industry-standard-app-44ck
-
-
-
-export const UserRoutes = router;
+router.delete("/:id", auth(USER_ROLE.ADMIN), UserControllers.deleteUser);
