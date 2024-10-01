@@ -27,7 +27,7 @@ const registerUser = async (payload: TRegisterUser) => {
     _id: newUser._id,
     name: newUser.name,
     email: newUser.email,
-    mobileNumber: newUser.mobileNumber,
+
     role: newUser.role,
     status: newUser.status,
   };
@@ -76,7 +76,7 @@ const loginUser = async (payload: TLoginUser) => {
     _id: user._id,
     name: user.name,
     email: user.email,
-    mobileNumber: user.mobileNumber,
+
     role: user.role,
     status: user.status,
   };
@@ -177,7 +177,7 @@ const refreshToken = async (token: string) => {
     _id: user._id,
     name: user.name,
     email: user.email,
-    mobileNumber: user.mobileNumber,
+
     role: user.role,
     status: user.status,
   };

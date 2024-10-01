@@ -4,9 +4,9 @@ import { JwtPayload } from "jsonwebtoken";
 import config from "../config";
 import AppError from "../errors/AppError";
 import catchAsync from "../utils/catchAsync";
-import { USER_ROLE } from "../module/User/user.constant";
+import { USER_ROLE } from "../modules/User/user.constant";
 import { verifyToken } from "../utils/tokenGenerateFunction";
-import { User } from "../module/User/user.model";
+import { User } from "../modules/User/user.model";
 
 const auth = (...requiredRoles: (keyof typeof USER_ROLE)[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {

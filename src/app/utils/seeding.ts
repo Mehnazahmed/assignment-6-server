@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 
 import config from "../config";
-import { USER_ROLE, USER_STATUS } from "../module/User/user.constant";
-import { User } from "../module/User/user.model";
+import { USER_ROLE, USER_STATUS } from "../modules/User/user.constant";
+import { User } from "../modules/User/user.model";
 
 export const seed = async () => {
   try {
